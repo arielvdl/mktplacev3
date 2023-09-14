@@ -92,22 +92,19 @@ contract GotasNFTMarketplace is Ownable, ReentrancyGuard, Pausable {
             nftContract.safeTransferFrom(listing.seller, msg.sender, _nftId);
         }
 
-        // Transferir os fundos após todas as ações serem concluídas para evitar reentrância
         payable(listing.seller).transfer(sellerAmount);
         payable(royaltyAddress).transfer(royaltyAmount);
         payable(platformFeeAddress).transfer(platformFee);
 
-        // Remova o registro do anúncio após a venda
+        emit NFTSold(_listingId, listing.seller, msg.sender, listing.price);
+
         delete listings[_listingId];
         delete listingOwners[_listingId];
-
-        emit NFTSold(_listingId, listing.seller, msg.sender, listing.price);
     }
 
     function cancelListing(uint256 _listingId) external nonReentrant {
         require(listingOwners[_listingId] == msg.sender, "Only the listing owner can cancel it.");
         
-        // Remova o registro do anúncio
         delete listings[_listingId];
         delete listingOwners[_listingId];
 
