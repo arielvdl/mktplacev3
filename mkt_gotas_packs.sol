@@ -85,6 +85,10 @@ contract GotasNFTMarketplace is Ownable, ReentrancyGuard, Pausable {
         uint256 platformFee = (listing.price * platformFeePercentage) / 10000;
         uint256 sellerAmount = listing.price - royaltyAmount - platformFee;
 
+        // Registre as alterações de estado primeiro
+        delete listings[_listingId];
+        delete listingOwners[_listingId];
+
         IERC721 nftContract = IERC721(listing.nftContractAddress);
         for (uint256 i = 0; i < listing.nftIds.length; i++) {
             uint256 _nftId = listing.nftIds[i];
@@ -97,9 +101,6 @@ contract GotasNFTMarketplace is Ownable, ReentrancyGuard, Pausable {
         payable(platformFeeAddress).transfer(platformFee);
 
         emit NFTSold(_listingId, listing.seller, msg.sender, listing.price);
-
-        delete listings[_listingId];
-        delete listingOwners[_listingId];
     }
 
     function cancelListing(uint256 _listingId) external nonReentrant {
