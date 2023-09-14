@@ -85,14 +85,15 @@ contract GotasNFTMarketplace is Ownable, ReentrancyGuard, Pausable {
         uint256 platformFee = (listing.price * platformFeePercentage) / 10000;
         uint256 sellerAmount = listing.price - royaltyAmount - platformFee;
 
-        // Registre as alterações de estado primeiro
-        delete listings[_listingId];
-        delete listingOwners[_listingId];
-
         IERC721 nftContract = IERC721(listing.nftContractAddress);
         for (uint256 i = 0; i < listing.nftIds.length; i++) {
             uint256 _nftId = listing.nftIds[i];
             require(nftContract.ownerOf(_nftId) == listing.seller, "Seller no longer owns one of the NFTs.");
+
+            // Certifique-se de que o vendedor aprovou a transferência ou é o msg.sender
+            require(nftContract.isApprovedForAll(listing.seller, address(this)) || nftContract.getApproved(_nftId) == address(this) || listing.seller == msg.sender, "Transfer not approved.");
+
+            // Efetue a transferência do NFT
             nftContract.safeTransferFrom(listing.seller, msg.sender, _nftId);
         }
 
@@ -101,6 +102,10 @@ contract GotasNFTMarketplace is Ownable, ReentrancyGuard, Pausable {
         payable(platformFeeAddress).transfer(platformFee);
 
         emit NFTSold(_listingId, listing.seller, msg.sender, listing.price);
+
+        // Registre as alterações de estado após a transferência bem-sucedida do NFT
+        delete listings[_listingId];
+        delete listingOwners[_listingId];
     }
 
     function cancelListing(uint256 _listingId) external nonReentrant {
