@@ -43,12 +43,15 @@ contract GotasNFTMarketplace is Ownable, ReentrancyGuard, Pausable {
 // Adicione uma variável de estado para acompanhar o saldo do contrato
 uint256 public contractBalance;
 
-constructor(uint256 _royaltyPercentage, uint256 _platformFeePercentage, address _royaltyAddress, address _platformFeeAddress) {
-    require(_royaltyAddress != address(0) && _platformFeeAddress != address(0), "Enderecos nao podem ser zero");
-    royaltyPercentage = _royaltyPercentage;
-    platformFeePercentage = _platformFeePercentage;
-    royaltyAddress = _royaltyAddress;
-    platformFeeAddress = _platformFeeAddress;
+    constructor(uint256 _royaltyPercentage, uint256 _platformFeePercentage, address _royaltyAddress, address _platformFeeAddress) {
+        require(_royaltyAddress != address(0) && _platformFeeAddress != address(0), "Enderecos nao podem ser zero");
+        royaltyPercentage = _royaltyPercentage;
+        platformFeePercentage = _platformFeePercentage;
+        royaltyAddress = _royaltyAddress;
+        platformFeeAddress = _platformFeeAddress;
+
+        // Inicialize a matriz de activeListingIds vazia
+        activeListingIds = new uint256[](0);
 
     // Inicialize os mapeamentos aqui
     listings[0] = Listing(address(0), new uint256[](0), address(0), 0, 0);
