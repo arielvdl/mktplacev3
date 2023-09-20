@@ -40,16 +40,32 @@ contract GotasNFTMarketplace is Ownable, ReentrancyGuard, Pausable {
 
   
 
+// Adicione uma variável de estado para acompanhar o saldo do contrato
+uint256 public contractBalance;
+
 constructor(uint256 _royaltyPercentage, uint256 _platformFeePercentage, address _royaltyAddress, address _platformFeeAddress) {
-    require(_royaltyAddress != address(0) && _platformFeeAddress != address(0), "Addresses cannot be zero");
+    require(_royaltyAddress != address(0) && _platformFeeAddress != address(0), "Enderecos nao podem ser zero");
     royaltyPercentage = _royaltyPercentage;
     platformFeePercentage = _platformFeePercentage;
     royaltyAddress = _royaltyAddress;
     platformFeeAddress = _platformFeeAddress;
 
-    // Initialize the mappings here
+    // Inicialize os mapeamentos aqui
     listings[0] = Listing(address(0), new uint256[](0), address(0), 0, 0);
     listingOwners[0] = address(0);
+}
+
+// Função para permitir que o proprietário do contrato retire ether
+function withdrawEther() external onlyOwner {
+    // Certifique-se de que haja um saldo positivo para retirar
+    require(contractBalance > 0, "O saldo do contrato e zero");
+
+    // Armazene o saldo atual para evitar ataques de reentrada
+    uint256 balanceToWithdraw = contractBalance;
+    contractBalance = 0;
+
+    // Transfira o saldo para o proprietário do contrato
+    payable(owner()).transfer(balanceToWithdraw);
 }
 
 
